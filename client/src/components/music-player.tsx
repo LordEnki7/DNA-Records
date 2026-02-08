@@ -10,6 +10,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import type { Track, Artist } from "@shared/schema";
+import { audioEngine } from "@/lib/audio-engine";
 
 interface PlayerTrack extends Track {
   artistName?: string;
@@ -43,6 +44,28 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrack, setCurrentTrack] = useState<PlayerTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<PlayerTrack[]>([]);
+  const trackIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (currentTrack && isPlaying) {
+      if (trackIdRef.current !== currentTrack.id) {
+        audioEngine.start(currentTrack.title, currentTrack.genre);
+        trackIdRef.current = currentTrack.id;
+      } else if (audioEngine.currentState === "paused") {
+        audioEngine.resume();
+      } else if (audioEngine.currentState === "stopped") {
+        audioEngine.start(currentTrack.title, currentTrack.genre);
+      }
+    } else if (!isPlaying && audioEngine.currentState === "playing") {
+      audioEngine.pause();
+    }
+  }, [currentTrack, isPlaying]);
+
+  useEffect(() => {
+    return () => {
+      audioEngine.destroy();
+    };
+  }, []);
 
   const playTrack = useCallback((track: PlayerTrack, newQueue?: PlayerTrack[]) => {
     setCurrentTrack(track);
@@ -93,6 +116,11 @@ export function MusicPlayerBar() {
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const effectiveVolume = isMuted ? 0 : volume / 100;
+    audioEngine.setVolume(effectiveVolume);
+  }, [volume, isMuted]);
 
   useEffect(() => {
     if (isPlaying && currentTrack) {
