@@ -1,0 +1,62 @@
+Project: Futuristic AI-Driven Record Label App for AI Artists
+
+Overview:
+Build a cross-platform music application (mobile and web) that functions as an AI-driven record label. The app will sign and promote AI virtual artists and allow users to stream music (both live and on-demand). It should have a cutting-edge, futuristic look and feel.
+
+Features to implement:
+1. **User Roles & Authentication:** Include roles for (a) AI Artists (creators) and (b) Fans (listeners), plus an admin role for label staff. Implement secure sign-up/login and profile management for each role.
+2. **Artist Profile & Uploads:** Allow AI artist users to create a profile with an avatar (image or 3D model), bio, and links. Artists can upload music tracks (audio files) with metadata (title, genre, etc.). Provide an interface for artists to manage their releases (edit track info, schedule release dates).
+3. **Music Streaming (On-Demand):** Implement a music library and player for fans:
+   - Browse or search by artist, album, or genre.
+   - Stream songs on-demand with play/pause, skip, and seek controls.
+   - Display track info and artwork/visualizer during playback.
+   - Allow users to create playlists and like/favorite tracks.
+4. **Live Streaming Feature:** Implement a live audio streaming module:
+   - Artists can initiate a live stream (e.g., a live concert or DJ set). This could be a live audio feed (and video if possible).
+   - Fans see a list of current or upcoming live events, join a live stream, and hear the live music in real-time.
+   - Include a basic chat or reaction feature for fan engagement during live events.
+5. **AI A&R Bot (backend logic):** Create a backend service that analyzes new artist sign-ups and uploaded tracks to identify popular or trending content. (For the prototype, this can be rule-based: e.g., flag an artist if their song gets >100 likes or plays quickly.) This service can then recommend that the admin “sign” that artist. Log these recommendations or display them in an admin dashboard.
+6. **AI Marketing Automation:** Simulate an AI marketing assistant:
+   - When an artist releases a new song, automatically generate a promotional blurb (e.g., “Check out [Artist]’s new track [Title]!”) and display it in a News feed or send it as a notification.
+   - (Implementation can be simple: a function that creates a message string and timestamps it in a promotions database.)
+   - Provide an admin interface to view and approve these AI-generated promo messages.
+7. **Futuristic UI/UX:** Design the UI with a futuristic theme:
+   - Use a dark background with neon-colored accents for buttons and highlights.
+   - Include animated transitions between views.
+   - On the artist profile screen, display a placeholder for a 3D avatar or an animated image. (Actual 3D model integration can be a stretch goal – for now, use a static cool image and note where 3D would go.)
+   - Ensure the app is responsive (works on different screen sizes) and is intuitive to navigate.
+8. **Recommendations Engine:** Implement a basic recommendation section for fans (e.g., “Recommended for you”). For now, this can randomly suggest other AI artists or songs, or pick the most liked songs globally. (In the future, this would be AI-driven personalized suggestions.)
+9. **Notifications:** Enable push or in-app notifications:
+   - Notify fans when an artist they follow releases a new song or starts a live stream.
+   - Notify artists when they are signed by the label or when their song reaches certain milestones (X plays or likes).
+   - These can be represented in-app with a notifications list.
+10. **Scalability & Maintainability:** Structure the project for growth:
+    - Use a modular architecture (e.g., separate files/modules for user auth, streaming, live events, AI analytics).
+    - Document the code and use clear naming conventions.
+    - Where possible, leave hooks or interfaces for future integration of real AI models (for music recommendation, content moderation, etc.).
+
+Tech Stack:
+- Frontend: Use a modern framework (e.g., React or Flutter) to build the UI for web and mobile.
+- Backend: Use Node.js/Express (or Python/Flask, etc.) for server logic. Use WebSockets or a service for live streaming audio.
+- Database: Use a cloud database to store user profiles, songs metadata, play counts, etc.
+- Ensure the app can handle file streaming (for music) efficiently (e.g., store audio files on a cloud storage or use a streaming server).
+
+Goal:
+Deliver a functional prototype where:
+- An artist can sign up, upload a track, and see it listed.
+- A fan can sign up, stream the uploaded tracks, and see a simulated live event.
+- The futuristic design elements (theme, animations) are present.
+- The prompt can be used with an AI coding assistant to scaffold the project structure and core features.
+This prompt gives a clear specification to an AI developer, covering the intended functionality, design, and technical approach for the app. It can be pasted into a generative coding tool (like Replit’s AI or similar) to kickstart the building of this visionary music platform, ensuring that all key features we discussed are accounted for in the development process. Sources:
+Maximillian Wollenberg, “World’s First AI record label: Artist Empire,” Artist Empyre blog (Jul 2025) – description of an AI-run label managing song creation and marketing
+.
+Dani Deahl, “Warner Music signed an algorithm to a record deal — what happens next?,” The Verge (Mar 2019) – on Warner’s deal with Endel (AI music app) to create 20 albums of ambient tracks
+.
+Lyric Lounge Review, “5 Reasons Why It May Get Harder for New Bands on Spotify,” (Nov 2022) – noted ~100,000 songs are uploaded daily to streaming platforms, highlighting the need for AI filtering
+.
+Chartmetric, Product Page – features of data-driven A&R tools to discover promising artists early through analytics
+.
+Virtual Publicist, “The Best AI Tool for Record Labels,” (Dec 2022) – explains that AI can scan thousands of artist profiles and avoid fake followers, and auto-generate targeted press outreach for marketing
+.
+Akin Olla, The Guardian, “Are AI-powered ‘virtual rappers’ just a strange new form of blackface?,” (Sep 2022) – discusses the case of FN Meka, an AI virtual rapper dropped by its label due to backlash over racist stereotypes
+.
