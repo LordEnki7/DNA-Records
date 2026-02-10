@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { usePlayer } from "@/components/music-player";
+import { useUserLikes } from "@/hooks/use-interactions";
 import { Link } from "wouter";
-import { Play, TrendingUp, Clock, Headphones } from "lucide-react";
+import { Play, TrendingUp, Clock, Headphones, Heart } from "lucide-react";
 import type { Artist, Track } from "@shared/schema";
 
 function TrackRow({
@@ -23,7 +24,9 @@ function TrackRow({
   allArtists: Artist[];
 }) {
   const { playTrack, currentTrack, isPlaying } = usePlayer();
+  const { isLiked, toggleLike } = useUserLikes();
   const isCurrentTrack = currentTrack?.id === track.id;
+  const liked = isLiked(track.id);
 
   const handlePlay = () => {
     const queue = allTracks.map((t) => ({
@@ -48,8 +51,9 @@ function TrackRow({
       <Button
         size="icon"
         variant="ghost"
-        className="w-6 h-6 invisible group-hover:visible absolute ml-0"
+        className="invisible group-hover:visible absolute ml-0"
         data-testid={`button-play-track-${track.id}`}
+        onClick={(e) => { e.stopPropagation(); handlePlay(); }}
       >
         <Play className="w-3 h-3" />
       </Button>
@@ -74,7 +78,16 @@ function TrackRow({
           </Link>
         )}
       </div>
-      <span className="text-xs text-muted-foreground tabular-nums">
+      <Button
+        size="icon"
+        variant="ghost"
+        className={liked ? "text-red-500" : "text-muted-foreground"}
+        onClick={(e) => { e.stopPropagation(); toggleLike(track.id); }}
+        data-testid={`button-like-${track.id}`}
+      >
+        <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
+      </Button>
+      <span className="text-xs text-muted-foreground tabular-nums hidden sm:inline">
         {Math.floor((track.duration || 0) / 60)}:
         {((track.duration || 0) % 60).toString().padStart(2, "0")}
       </span>
@@ -133,7 +146,7 @@ export default function Home() {
   const topArtists = [...artists].sort((a, b) => (b.monthlyListeners || 0) - (a.monthlyListeners || 0)).slice(0, 6);
 
   return (
-    <div className="p-6 pb-24 space-y-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 pb-24 space-y-8 max-w-6xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold" data-testid="text-welcome">
           Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
@@ -144,7 +157,7 @@ export default function Home() {
       </div>
 
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
             Trending Now
@@ -178,7 +191,7 @@ export default function Home() {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Headphones className="w-5 h-5 text-primary" />
             Top Artists
@@ -205,7 +218,7 @@ export default function Home() {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Clock className="w-5 h-5 text-primary" />
             New Releases

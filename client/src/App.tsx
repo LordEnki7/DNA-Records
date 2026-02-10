@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PlayerProvider, MusicPlayerBar } from "@/components/music-player";
+import { GlobalSearch } from "@/components/global-search";
 import { useAuth } from "@/hooks/use-auth";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
@@ -52,6 +53,7 @@ function AuthenticatedLayout() {
           <div className="flex flex-col flex-1 min-w-0">
             <header className="flex items-center justify-between gap-2 p-2 border-b border-border/50 sticky top-0 z-40 bg-background/80 backdrop-blur-xl">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <GlobalSearch />
               <ThemeToggle />
             </header>
             <main className="flex-1 overflow-auto">

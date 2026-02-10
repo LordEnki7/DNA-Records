@@ -7,6 +7,7 @@ import {
   boolean,
   timestamp,
   jsonb,
+  date,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -94,6 +95,34 @@ export const promotions = pgTable("promotions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userFollows = pgTable("user_follows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  artistId: varchar("artist_id").notNull().references(() => artists.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const liveSessions = pgTable("live_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  artistId: varchar("artist_id").notNull().references(() => artists.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  startsAt: timestamp("starts_at").notNull(),
+  endsAt: timestamp("ends_at").notNull(),
+  status: text("status").default("upcoming"),
+  viewerCount: integer("viewer_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const artistDailyStats = pgTable("artist_daily_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  artistId: varchar("artist_id").notNull().references(() => artists.id),
+  date: date("date").notNull(),
+  plays: integer("plays").default(0),
+  followers: integer("followers").default(0),
+  popularity: integer("popularity").default(0),
+});
+
 export const insertArtistSchema = createInsertSchema(artists).omit({
   id: true,
   createdAt: true,
@@ -115,6 +144,14 @@ export const insertPromotionSchema = createInsertSchema(promotions).omit({
   createdAt: true,
 });
 
+export const insertLiveSessionSchema = createInsertSchema(liveSessions).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertArtistDailyStatsSchema = createInsertSchema(artistDailyStats).omit({
+  id: true,
+});
+
 export type Artist = typeof artists.$inferSelect;
 export type InsertArtist = z.infer<typeof insertArtistSchema>;
 export type Track = typeof tracks.$inferSelect;
@@ -126,3 +163,8 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type ARRecommendation = typeof arRecommendations.$inferSelect;
 export type Promotion = typeof promotions.$inferSelect;
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
+export type UserFollow = typeof userFollows.$inferSelect;
+export type UserLike = typeof userLikes.$inferSelect;
+export type LiveSession = typeof liveSessions.$inferSelect;
+export type InsertLiveSession = z.infer<typeof insertLiveSessionSchema>;
+export type ArtistDailyStat = typeof artistDailyStats.$inferSelect;

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePlayer } from "@/components/music-player";
+import { useUserLikes } from "@/hooks/use-interactions";
 import { Link } from "wouter";
 import { useState } from "react";
 import {
@@ -13,7 +14,7 @@ import {
   Headphones,
   TrendingUp,
   Music2,
-  Filter,
+  Heart,
 } from "lucide-react";
 import type { Artist, Track } from "@shared/schema";
 
@@ -42,6 +43,7 @@ export default function Discover() {
   });
 
   const { playTrack } = usePlayer();
+  const { isLiked, toggleLike } = useUserLikes();
 
   const filteredArtists = artists.filter((a) => {
     const matchesSearch =
@@ -71,7 +73,7 @@ export default function Discover() {
   };
 
   return (
-    <div className="p-6 pb-24 space-y-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 pb-24 space-y-6 max-w-6xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold">Discover</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -179,6 +181,7 @@ export default function Discover() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTracks.map((track) => {
               const artist = artists.find((a) => a.id === track.artistId);
+              const liked = isLiked(track.id);
               return (
                 <Card
                   key={track.id}
@@ -188,11 +191,7 @@ export default function Discover() {
                 >
                   <div className="w-12 h-12 rounded-md overflow-hidden bg-muted/30 flex-shrink-0 relative">
                     {track.coverUrl ? (
-                      <img
-                        src={track.coverUrl}
-                        alt={track.title}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-primary/5">
                         <Music2 className="w-5 h-5 text-primary/40" />
@@ -208,7 +207,16 @@ export default function Discover() {
                       {artist?.name || "Unknown"}
                     </p>
                   </div>
-                  <div className="text-xs text-muted-foreground tabular-nums">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={liked ? "text-red-500" : "text-muted-foreground"}
+                    onClick={(e) => { e.stopPropagation(); toggleLike(track.id); }}
+                    data-testid={`button-like-discover-${track.id}`}
+                  >
+                    <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
+                  </Button>
+                  <div className="text-xs text-muted-foreground tabular-nums hidden sm:inline">
                     {Math.floor((track.duration || 0) / 60)}:
                     {((track.duration || 0) % 60).toString().padStart(2, "0")}
                   </div>

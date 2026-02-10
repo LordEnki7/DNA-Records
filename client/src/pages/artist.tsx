@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
+import { useRoute, Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePlayer } from "@/components/music-player";
+import { useUserLikes, useUserFollows } from "@/hooks/use-interactions";
 import {
   Play,
   Headphones,
@@ -12,8 +13,21 @@ import {
   Music2,
   Clock,
   CheckCircle2,
+  Heart,
+  UserPlus,
+  UserCheck,
+  BarChart3,
 } from "lucide-react";
-import type { Artist, Track } from "@shared/schema";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
+import type { Artist, Track, ArtistDailyStat } from "@shared/schema";
 
 export default function ArtistProfile() {
   const [, params] = useRoute("/artist/:id");
@@ -29,7 +43,14 @@ export default function ArtistProfile() {
     enabled: !!artistId,
   });
 
+  const { data: stats = [] } = useQuery<ArtistDailyStat[]>({
+    queryKey: ["/api/artists", artistId, "stats"],
+    enabled: !!artistId,
+  });
+
   const { playTrack, currentTrack, isPlaying } = usePlayer();
+  const { isLiked, toggleLike } = useUserLikes();
+  const { isFollowing, toggleFollow } = useUserFollows();
 
   const handlePlayAll = () => {
     if (tracks.length > 0) {
@@ -67,6 +88,13 @@ export default function ArtistProfile() {
 
   const totalPlays = tracks.reduce((sum, t) => sum + (t.plays || 0), 0);
 
+  const chartData = stats.map((s) => ({
+    date: new Date(s.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    plays: s.plays || 0,
+    followers: s.followers || 0,
+    popularity: s.popularity || 0,
+  }));
+
   return (
     <div className="pb-24">
       <div className="relative h-64 md:h-80 overflow-hidden">
@@ -97,7 +125,7 @@ export default function ArtistProfile() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {artist.isVerified && (
                   <CheckCircle2 className="w-5 h-5 text-primary" />
                 )}
@@ -114,8 +142,7 @@ export default function ArtistProfile() {
               <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Headphones className="w-4 h-4" />
-                  {(artist.monthlyListeners || 0).toLocaleString()} monthly
-                  listeners
+                  {(artist.monthlyListeners || 0).toLocaleString()} monthly listeners
                 </span>
                 <span className="flex items-center gap-1">
                   <TrendingUp className="w-4 h-4" />
@@ -129,10 +156,22 @@ export default function ArtistProfile() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 mt-6 space-y-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button onClick={handlePlayAll} data-testid="button-play-all">
             <Play className="w-4 h-4 mr-1" />
             Play All
+          </Button>
+          <Button
+            variant={isFollowing(artist.id) ? "secondary" : "outline"}
+            onClick={() => toggleFollow(artist.id)}
+            data-testid="button-follow-artist"
+          >
+            {isFollowing(artist.id) ? (
+              <UserCheck className="w-4 h-4 mr-1" />
+            ) : (
+              <UserPlus className="w-4 h-4 mr-1" />
+            )}
+            {isFollowing(artist.id) ? "Following" : "Follow"}
           </Button>
         </div>
 
@@ -143,6 +182,68 @@ export default function ArtistProfile() {
               {artist.bio}
             </p>
           </Card>
+        )}
+
+        {chartData.length > 0 && (
+          <section>
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Analytics
+              <span className="text-sm font-normal text-muted-foreground">(Last 30 days)</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Daily Plays</h4>
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="playsGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(25, 95%, 53%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(25, 95%, 53%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval="preserveStartEnd" />
+                    <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Area type="monotone" dataKey="plays" stroke="hsl(25, 95%, 53%)" fill="url(#playsGradient)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Card>
+              <Card className="p-4">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Popularity Score</h4>
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="popGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" interval="preserveStartEnd" />
+                    <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" domain={[0, 100]} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Area type="monotone" dataKey="popularity" stroke="hsl(var(--primary))" fill="url(#popGradient)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Card>
+            </div>
+          </section>
         )}
 
         <section>
@@ -169,6 +270,7 @@ export default function ArtistProfile() {
             <Card className="p-2">
               {tracks.map((track, i) => {
                 const isCurrentTrack = currentTrack?.id === track.id;
+                const liked = isLiked(track.id);
                 return (
                   <div
                     key={track.id}
@@ -182,37 +284,35 @@ export default function ArtistProfile() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="w-6 h-6 invisible group-hover:visible absolute ml-0"
+                      className="invisible group-hover:visible absolute ml-0"
+                      onClick={(e) => { e.stopPropagation(); handlePlayTrack(track); }}
                     >
                       <Play className="w-3 h-3" />
                     </Button>
                     <div className="w-9 h-9 rounded-md overflow-hidden bg-muted/30 flex-shrink-0">
                       {track.coverUrl ? (
-                        <img
-                          src={track.coverUrl}
-                          alt={track.title}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <div
-                            className={`w-3 h-3 rounded-full border border-primary ${
-                              isCurrentTrack && isPlaying ? "animate-neon-pulse" : ""
-                            }`}
-                          />
+                          <div className={`w-3 h-3 rounded-full border border-primary ${isCurrentTrack && isPlaying ? "animate-neon-pulse" : ""}`} />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium truncate ${
-                          isCurrentTrack ? "text-primary" : ""
-                        }`}
-                      >
+                      <p className={`text-sm font-medium truncate ${isCurrentTrack ? "text-primary" : ""}`}>
                         {track.title}
                       </p>
                       <p className="text-xs text-muted-foreground">{track.genre}</p>
                     </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className={liked ? "text-red-500" : "text-muted-foreground"}
+                      onClick={(e) => { e.stopPropagation(); toggleLike(track.id); }}
+                      data-testid={`button-like-track-${track.id}`}
+                    >
+                      <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
+                    </Button>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Headphones className="w-3 h-3" />
