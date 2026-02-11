@@ -104,7 +104,6 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/login", (req, res, next) => {
     const domain = req.hostname;
-    console.log(`[Auth] Login initiated, hostname: ${domain}, protocol: ${req.protocol}`);
     ensureStrategy(domain);
     passport.authenticate(`replitauth:${domain}`, {
       prompt: "login",
@@ -113,7 +112,6 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     const domain = req.hostname;
-    console.log(`[Auth] Callback received, hostname: ${domain}, query keys: ${Object.keys(req.query).join(",")}`);
     ensureStrategy(domain);
     passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/",
