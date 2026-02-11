@@ -24,6 +24,8 @@ import {
   LogOut,
   Megaphone,
   TrendingUp,
+  DollarSign,
+  CalendarDays,
 } from "lucide-react";
 import logoUrl from "@assets/ChatGPT_Image_Feb_7,_2026,_11_31_15_PM_1770526963729.png";
 
@@ -38,6 +40,8 @@ const mainNavItems = [
 const adminNavItems = [
   { title: "A&R Scout", url: "/admin/ar", icon: TrendingUp },
   { title: "Marketing", url: "/admin/marketing", icon: Megaphone },
+  { title: "Revenue", url: "/admin/revenue", icon: DollarSign },
+  { title: "Content Calendar", url: "/admin/calendar", icon: CalendarDays },
   { title: "Label Admin", url: "/admin", icon: Shield },
 ];
 

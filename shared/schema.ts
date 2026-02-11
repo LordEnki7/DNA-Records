@@ -123,6 +123,29 @@ export const artistDailyStats = pgTable("artist_daily_stats", {
   popularity: integer("popularity").default(0),
 });
 
+export const revenueDaily = pgTable("revenue_daily", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  artistId: varchar("artist_id").notNull().references(() => artists.id),
+  trackId: varchar("track_id").references(() => tracks.id),
+  date: date("date").notNull(),
+  streams: integer("streams").default(0),
+  revenue: integer("revenue_cents").default(0),
+});
+
+export const contentCalendar = pgTable("content_calendar", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  artistId: varchar("artist_id").notNull().references(() => artists.id),
+  trackId: varchar("track_id").references(() => tracks.id),
+  title: text("title").notNull(),
+  type: text("type").notNull(),
+  platform: text("platform"),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  status: text("status").default("pending"),
+  aiNotes: text("ai_notes"),
+  approvedBy: varchar("approved_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertArtistSchema = createInsertSchema(artists).omit({
   id: true,
   createdAt: true,
@@ -168,3 +191,11 @@ export type UserLike = typeof userLikes.$inferSelect;
 export type LiveSession = typeof liveSessions.$inferSelect;
 export type InsertLiveSession = z.infer<typeof insertLiveSessionSchema>;
 export type ArtistDailyStat = typeof artistDailyStats.$inferSelect;
+
+export const insertRevenueDailySchema = createInsertSchema(revenueDaily).omit({ id: true });
+export const insertContentCalendarSchema = createInsertSchema(contentCalendar).omit({ id: true, createdAt: true });
+
+export type RevenueDaily = typeof revenueDaily.$inferSelect;
+export type InsertRevenueDaily = z.infer<typeof insertRevenueDailySchema>;
+export type ContentCalendarItem = typeof contentCalendar.$inferSelect;
+export type InsertContentCalendarItem = z.infer<typeof insertContentCalendarSchema>;

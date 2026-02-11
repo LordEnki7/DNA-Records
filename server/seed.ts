@@ -7,6 +7,8 @@ import {
   promotions,
   liveSessions,
   artistDailyStats,
+  revenueDaily,
+  contentCalendar,
 } from "@shared/schema";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
@@ -17,6 +19,11 @@ export async function seedDatabase() {
     const existingSessions = await db.select().from(liveSessions);
     if (existingSessions.length === 0) {
       await seedLiveSessionsAndStats(existingArtists);
+    }
+    const existingRevenue = await db.select().from(revenueDaily);
+    if (existingRevenue.length === 0) {
+      const existingTracks = await db.select().from(tracks);
+      await seedRevenueAndCalendar(existingArtists, existingTracks);
     }
     console.log("Database already seeded, skipping...");
     return;
@@ -136,6 +143,10 @@ export async function seedDatabase() {
   ]);
 
   await seedLiveSessionsAndStats([novaSynth, cipherBeats, echoPrime, zeroFlux, ariaMatrix]);
+  await seedRevenueAndCalendar(
+    [novaSynth, cipherBeats, echoPrime, zeroFlux, ariaMatrix],
+    createdTracks
+  );
 
   console.log("Database seeded successfully!");
 }
@@ -200,4 +211,80 @@ async function seedLiveSessionsAndStats(artistList: any[]) {
 
   await db.insert(artistDailyStats).values(statsData);
   console.log("Live sessions and artist stats seeded!");
+}
+
+async function seedRevenueAndCalendar(artistList: any[], trackList: any[]) {
+  const existingRevenue = await db.select().from(revenueDaily);
+  if (existingRevenue.length > 0) return;
+
+  const now = new Date();
+  const revenueData: any[] = [];
+
+  const ratePerStream: Record<string, number> = {};
+  for (const a of artistList) {
+    ratePerStream[a.id] = 30 + Math.floor(Math.random() * 20);
+  }
+
+  for (const track of trackList) {
+    const rate = ratePerStream[track.artistId] || 35;
+    for (let d = 29; d >= 0; d--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - d);
+      const dateStr = date.toISOString().split("T")[0];
+      const baseStreams = Math.floor((track.plays || 5000) / 30);
+      const variation = 0.7 + Math.random() * 0.6;
+      const streams = Math.round(baseStreams * variation);
+      revenueData.push({
+        artistId: track.artistId,
+        trackId: track.id,
+        date: dateStr,
+        streams,
+        revenue: Math.round(streams * rate / 10),
+      });
+    }
+  }
+
+  await db.insert(revenueDaily).values(revenueData);
+
+  const calendarItems: any[] = [];
+  const types = ["release", "promotion", "social_post", "playlist_pitch", "press_release"];
+  const platforms = ["spotify", "twitter", "instagram", "tiktok", "youtube", "apple_music"];
+  const aiNotes = [
+    "AI analysis suggests peak engagement during evening hours. Recommend scheduling for 7 PM EST.",
+    "Trending audio patterns match this artist's style. Capitalize on viral potential with short-form video content.",
+    "Algorithm predicts 2.3x higher discovery rate when paired with playlist placement strategy.",
+    "Audience sentiment analysis shows strong positive reception. Recommend increasing promotional spend.",
+    "Cross-platform data indicates optimal posting frequency of 3x/week for sustained growth.",
+    "Neural network content scoring rates this at 87/100 for engagement potential.",
+    "Competitor analysis shows gap in ambient/electronic crossover space. Perfect timing for release.",
+    "Fan demographic data suggests strong TikTok potential. Recommend 15-second teaser clips.",
+  ];
+
+  for (const artist of artistList) {
+    const artistTracks = trackList.filter((t: any) => t.artistId === artist.id);
+    for (let i = 0; i < 8; i++) {
+      const daysOffset = Math.floor(Math.random() * 60) - 15;
+      const scheduledAt = new Date(now.getTime() + daysOffset * 24 * 60 * 60 * 1000);
+      scheduledAt.setHours(10 + Math.floor(Math.random() * 10), 0, 0, 0);
+      const type = types[Math.floor(Math.random() * types.length)];
+      const platform = platforms[Math.floor(Math.random() * platforms.length)];
+      const track = artistTracks[Math.floor(Math.random() * artistTracks.length)];
+      const isPast = daysOffset < -2;
+      const status = isPast ? (Math.random() > 0.3 ? "completed" : "approved") : (Math.random() > 0.5 ? "pending" : "approved");
+
+      calendarItems.push({
+        artistId: artist.id,
+        trackId: track?.id || null,
+        title: `${type === "release" ? "Release" : type === "promotion" ? "Promo Campaign" : type === "social_post" ? "Social Post" : type === "playlist_pitch" ? "Playlist Pitch" : "Press Release"}: ${artist.name}${track ? ` - ${track.title}` : ""}`,
+        type,
+        platform,
+        scheduledAt,
+        status,
+        aiNotes: aiNotes[Math.floor(Math.random() * aiNotes.length)],
+      });
+    }
+  }
+
+  await db.insert(contentCalendar).values(calendarItems);
+  console.log("Revenue and content calendar seeded!");
 }

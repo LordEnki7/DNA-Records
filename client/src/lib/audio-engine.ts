@@ -218,7 +218,7 @@ export class AudioEngine {
     reverbGain.connect(compressor);
     delayOutGain.connect(compressor);
     compressor.connect(this.masterGain);
-    this.masterGain.connect(ctx.destination);
+    this.buildEQChain();
   }
 
   private scheduleNote(time: number) {
@@ -387,6 +387,60 @@ export class AudioEngine {
     if (this.masterGain) {
       this.masterGain.gain.value = this.volumeValue;
     }
+  }
+
+  private eqBands: BiquadFilterNode[] = [];
+  private eqGains: number[] = [0, 0, 0, 0, 0];
+  static readonly EQ_FREQUENCIES = [60, 230, 910, 3600, 14000];
+  static readonly EQ_LABELS = ["60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz"];
+
+  applyEQ(bandIndex: number, gainDb: number) {
+    this.eqGains[bandIndex] = gainDb;
+    if (this.eqBands[bandIndex]) {
+      this.eqBands[bandIndex].gain.value = gainDb;
+    }
+  }
+
+  getEQGains(): number[] {
+    return [...this.eqGains];
+  }
+
+  resetEQ() {
+    for (let i = 0; i < 5; i++) {
+      this.eqGains[i] = 0;
+      if (this.eqBands[i]) {
+        this.eqBands[i].gain.value = 0;
+      }
+    }
+  }
+
+  private buildEQChain() {
+    if (!this.ctx || !this.masterGain) return;
+    const ctx = this.ctx;
+    this.eqBands = [];
+
+    let prevNode: AudioNode = this.masterGain;
+
+    this.masterGain.disconnect();
+
+    for (let i = 0; i < AudioEngine.EQ_FREQUENCIES.length; i++) {
+      const eq = ctx.createBiquadFilter();
+      if (i === 0) {
+        eq.type = "lowshelf";
+      } else if (i === AudioEngine.EQ_FREQUENCIES.length - 1) {
+        eq.type = "highshelf";
+      } else {
+        eq.type = "peaking";
+        eq.Q.value = 1.0;
+      }
+      eq.frequency.value = AudioEngine.EQ_FREQUENCIES[i];
+      eq.gain.value = this.eqGains[i];
+      prevNode.connect(eq);
+      prevNode = eq;
+      this.eqBands.push(eq);
+      this.graphNodes.push(eq);
+    }
+    prevNode.connect(ctx.destination);
   }
 
   get currentState(): EngineState {

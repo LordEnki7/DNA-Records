@@ -285,5 +285,75 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/admin/revenue", async (req, res) => {
+    try {
+      const artistId = req.query.artistId as string | undefined;
+      if (artistId) {
+        const data = await storage.getRevenueByArtist(artistId);
+        res.json(data);
+      } else {
+        const data = await storage.getRevenueByArtist();
+        res.json(data);
+      }
+    } catch (error) {
+      console.error("Error fetching revenue:", error);
+      res.status(500).json({ message: "Failed to fetch revenue" });
+    }
+  });
+
+  app.get("/api/admin/revenue/summary", async (_req, res) => {
+    try {
+      const summary = await storage.getRevenueSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching revenue summary:", error);
+      res.status(500).json({ message: "Failed to fetch revenue summary" });
+    }
+  });
+
+  app.get("/api/admin/calendar", async (_req, res) => {
+    try {
+      const items = await storage.getCalendarItems();
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching calendar:", error);
+      res.status(500).json({ message: "Failed to fetch calendar" });
+    }
+  });
+
+  app.patch("/api/admin/calendar/:id", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status || !["approved", "rejected", "completed"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      const item = await storage.updateCalendarItem(req.params.id, status);
+      if (!item) {
+        return res.status(404).json({ message: "Calendar item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating calendar item:", error);
+      res.status(500).json({ message: "Failed to update calendar item" });
+    }
+  });
+
+  app.patch("/api/playlists/:id/reorder", async (req, res) => {
+    try {
+      const user = getUser(req);
+      if (!user) return res.status(401).json({ message: "Unauthorized" });
+      const { trackIds } = req.body;
+      if (!Array.isArray(trackIds)) {
+        return res.status(400).json({ message: "trackIds must be an array" });
+      }
+      const playlist = await storage.reorderPlaylist(req.params.id, trackIds);
+      if (!playlist) return res.status(404).json({ message: "Playlist not found" });
+      res.json(playlist);
+    } catch (error) {
+      console.error("Error reordering playlist:", error);
+      res.status(500).json({ message: "Failed to reorder playlist" });
+    }
+  });
+
   return httpServer;
 }

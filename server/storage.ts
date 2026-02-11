@@ -9,6 +9,8 @@ import {
   notifications,
   arRecommendations,
   promotions,
+  revenueDaily,
+  contentCalendar,
   type Artist,
   type InsertArtist,
   type Track,
@@ -22,6 +24,9 @@ import {
   type InsertPromotion,
   type LiveSession,
   type ArtistDailyStat,
+  type RevenueDaily,
+  type ContentCalendarItem,
+  type InsertContentCalendarItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and, or, ilike, asc } from "drizzle-orm";
@@ -65,6 +70,14 @@ export interface IStorage {
   getPromotions(): Promise<Promotion[]>;
   createPromotion(data: InsertPromotion): Promise<Promotion>;
   updatePromotion(id: string, status: string, approvedBy?: string): Promise<Promotion | undefined>;
+
+  getRevenueByArtist(artistId?: string): Promise<RevenueDaily[]>;
+  getRevenueSummary(): Promise<{ artistId: string; totalStreams: number; totalRevenue: number }[]>;
+
+  getCalendarItems(): Promise<ContentCalendarItem[]>;
+  updateCalendarItem(id: string, status: string, approvedBy?: string): Promise<ContentCalendarItem | undefined>;
+
+  reorderPlaylist(id: string, trackIds: string[]): Promise<Playlist | undefined>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -306,6 +319,58 @@ class DatabaseStorage implements IStorage {
       .where(eq(promotions.id, id))
       .returning();
     return promo;
+  }
+
+  async getRevenueByArtist(artistId?: string): Promise<RevenueDaily[]> {
+    if (artistId) {
+      return db
+        .select()
+        .from(revenueDaily)
+        .where(eq(revenueDaily.artistId, artistId))
+        .orderBy(asc(revenueDaily.date));
+    }
+    return db.select().from(revenueDaily).orderBy(asc(revenueDaily.date));
+  }
+
+  async getRevenueSummary(): Promise<{ artistId: string; totalStreams: number; totalRevenue: number }[]> {
+    const rows = await db
+      .select({
+        artistId: revenueDaily.artistId,
+        totalStreams: sql<number>`COALESCE(SUM(${revenueDaily.streams}), 0)::int`,
+        totalRevenue: sql<number>`COALESCE(SUM(${revenueDaily.revenue}), 0)::int`,
+      })
+      .from(revenueDaily)
+      .groupBy(revenueDaily.artistId);
+    return rows;
+  }
+
+  async getCalendarItems(): Promise<ContentCalendarItem[]> {
+    return db
+      .select()
+      .from(contentCalendar)
+      .orderBy(asc(contentCalendar.scheduledAt));
+  }
+
+  async updateCalendarItem(
+    id: string,
+    status: string,
+    approvedBy?: string
+  ): Promise<ContentCalendarItem | undefined> {
+    const [item] = await db
+      .update(contentCalendar)
+      .set({ status, approvedBy })
+      .where(eq(contentCalendar.id, id))
+      .returning();
+    return item;
+  }
+
+  async reorderPlaylist(id: string, trackIds: string[]): Promise<Playlist | undefined> {
+    const [playlist] = await db
+      .update(playlists)
+      .set({ trackIds })
+      .where(eq(playlists.id, id))
+      .returning();
+    return playlist;
   }
 }
 
