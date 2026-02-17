@@ -15,7 +15,7 @@ const ThemeContext = createContext<ThemeContextType>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("echoforge-theme") as Theme) || "dark";
+      return (localStorage.getItem("dna-records-theme") as Theme) || "dark";
     }
     return "dark";
   });
@@ -24,7 +24,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-    localStorage.setItem("echoforge-theme", theme);
+    localStorage.setItem("dna-records-theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {

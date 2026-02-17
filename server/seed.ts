@@ -36,7 +36,7 @@ export async function seedDatabase() {
     .values([
       {
         name: "Nova Synth",
-        bio: "Born in the neural networks of a cutting-edge music laboratory, Nova Synth creates ethereal electronic soundscapes that blend ambient textures with pulsing synthwave rhythms. Her algorithmic compositions have captivated listeners across 47 countries, establishing her as the flagship artist of EchoForge Records.",
+        bio: "Born in the neural networks of a cutting-edge music laboratory, Nova Synth creates ethereal electronic soundscapes that blend ambient textures with pulsing synthwave rhythms. Her algorithmic compositions have captivated listeners across 47 countries, establishing her as the flagship artist of DNA Records.",
         genre: "Electronic",
         avatarUrl: "/images/artist-nova-synth.png",
         coverUrl: "/images/artist-nova-synth.png",
@@ -129,8 +129,8 @@ export async function seedDatabase() {
   ]);
 
   await db.insert(promotions).values([
-    { trackId: createdTracks[0].id, artistId: novaSynth.id, title: "Nova Synth - Neon Horizons Release Campaign", content: "Nova Synth just dropped 'Neon Horizons' and it's everything we hoped for. Pulsing synthwave meets ethereal ambience in this stunning new single. Stream it now on EchoForge Records. #AIMusic #NeonHorizons #NovaS", platform: "twitter", status: "pending" },
-    { trackId: createdTracks[6].id, artistId: echoPrime.id, title: "Echo Prime - Celestial Drift Feature Post", content: "Close your eyes. Press play. Let Echo Prime take you on a journey through 'Celestial Drift' - 5 minutes and 45 seconds of pure, AI-crafted ambient bliss. Perfect for deep focus or late-night contemplation.\n\nAvailable now exclusively on EchoForge Records.", platform: "instagram", status: "pending" },
+    { trackId: createdTracks[0].id, artistId: novaSynth.id, title: "Nova Synth - Neon Horizons Release Campaign", content: "Nova Synth just dropped 'Neon Horizons' and it's everything we hoped for. Pulsing synthwave meets ethereal ambience in this stunning new single. Stream it now on DNA Records. #AIMusic #NeonHorizons #NovaS", platform: "twitter", status: "pending" },
+    { trackId: createdTracks[6].id, artistId: echoPrime.id, title: "Echo Prime - Celestial Drift Feature Post", content: "Close your eyes. Press play. Let Echo Prime take you on a journey through 'Celestial Drift' - 5 minutes and 45 seconds of pure, AI-crafted ambient bliss. Perfect for deep focus or late-night contemplation.\n\nAvailable now exclusively on DNA Records.", platform: "instagram", status: "pending" },
     { trackId: createdTracks[3].id, artistId: cipherBeats.id, title: "Cipher Beats - Neural Networks TikTok Campaign", content: "POV: You discover an AI rapper that actually goes hard. Cipher Beats 'Neural Networks' is breaking boundaries in AI hip-hop. The future of beats is here.", platform: "tiktok", status: "approved" },
   ]);
 
@@ -178,7 +178,7 @@ async function seedLiveSessionsAndStats(artistList: any[]) {
     { artistId: cipherBeats.id, title: "Cipher's Beat Lab", description: "Watch Cipher Beats create beats live from scratch using neural network-powered production tools.", startsAt: upcoming1Start, endsAt: upcoming1End, status: "upcoming", viewerCount: 0 },
     { artistId: echoPrime.id, title: "Ambient Meditation Session", description: "A 2-hour ambient soundscape experience designed for deep relaxation and focus.", startsAt: upcoming2Start, endsAt: upcoming2End, status: "upcoming", viewerCount: 0 },
     { artistId: ariaMatrix.id, title: "Pop Futures: Aria Live", description: "Aria Matrix debuts unreleased tracks and takes song requests from the audience.", startsAt: upcoming3Start, endsAt: upcoming3End, status: "upcoming", viewerCount: 0 },
-    { artistId: zeroFlux.id, title: "Dark Electronic Night", description: "Zero Flux delivers a high-energy synthwave DJ set from the virtual EchoForge stage.", startsAt: past1Start, endsAt: past1End, status: "ended", viewerCount: 1523 },
+    { artistId: zeroFlux.id, title: "Dark Electronic Night", description: "Zero Flux delivers a high-energy synthwave DJ set from the virtual DNA Records stage.", startsAt: past1Start, endsAt: past1End, status: "ended", viewerCount: 1523 },
     { artistId: novaSynth.id, title: "Album Premiere: Digital Dreams", description: "The exclusive first listen of Nova Synth's debut album with live Q&A.", startsAt: past2Start, endsAt: past2End, status: "ended", viewerCount: 4210 },
   ]);
 

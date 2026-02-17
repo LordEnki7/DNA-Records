@@ -51,11 +51,11 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <img
               src={logoUrl}
-              alt="EchoForge Records"
+              alt="DNA Records"
               className="w-9 h-9 rounded-md object-cover"
             />
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-wider">ECHOFORGE</span>
+              <span className="text-sm font-bold tracking-wider">DNA</span>
               <span className="text-[9px] tracking-[0.3em] text-primary font-medium">
                 RECORDS
               </span>
@@ -159,7 +159,7 @@ export default function Landing() {
                 <div className="absolute -inset-4 bg-primary/10 rounded-2xl blur-2xl" />
                 <img
                   src={logoUrl}
-                  alt="EchoForge Records"
+                  alt="DNA Records"
                   className="relative w-full rounded-xl ring-1 ring-border/30"
                 />
               </div>
@@ -224,11 +224,11 @@ export default function Landing() {
           <div className="flex items-center gap-2">
             <img
               src={logoUrl}
-              alt="EchoForge"
+              alt="DNA Records"
               className="w-6 h-6 rounded-sm object-cover"
             />
             <span className="text-sm text-muted-foreground">
-              EchoForge Records - A Division of Project DNA Music
+              DNA Records - A Division of Project DNA Music
             </span>
           </div>
           <span className="text-xs text-muted-foreground">

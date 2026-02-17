@@ -73,7 +73,7 @@ export default function Admin() {
           Label Admin
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Overview of EchoForge Records operations
+          Overview of DNA Records operations
         </p>
       </div>
 

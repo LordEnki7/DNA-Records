@@ -56,12 +56,12 @@ export function AppSidebar() {
           <div className="flex items-center gap-3 cursor-pointer">
             <img
               src={logoUrl}
-              alt="EchoForge Records"
+              alt="DNA Records"
               className="w-10 h-10 rounded-md object-cover"
             />
             <div className="flex flex-col">
               <span className="text-sm font-bold tracking-wider text-foreground">
-                ECHOFORGE
+                DNA
               </span>
               <span className="text-[10px] tracking-[0.3em] text-primary font-medium">
                 RECORDS

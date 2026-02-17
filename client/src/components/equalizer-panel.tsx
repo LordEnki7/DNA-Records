@@ -19,7 +19,7 @@ export function EqualizerPanel({ onClose }: { onClose: () => void }) {
   const [activePreset, setActivePreset] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("echoforge-eq");
+    const saved = localStorage.getItem("dna-records-eq");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -35,7 +35,7 @@ export function EqualizerPanel({ onClose }: { onClose: () => void }) {
     setGains(newGains);
     audioEngine.applyEQ(index, value);
     setActivePreset(null);
-    localStorage.setItem("echoforge-eq", JSON.stringify(newGains));
+    localStorage.setItem("dna-records-eq", JSON.stringify(newGains));
   };
 
   const applyPreset = (name: string) => {
@@ -44,14 +44,14 @@ export function EqualizerPanel({ onClose }: { onClose: () => void }) {
     setGains([...preset]);
     preset.forEach((g, i) => audioEngine.applyEQ(i, g));
     setActivePreset(name);
-    localStorage.setItem("echoforge-eq", JSON.stringify(preset));
+    localStorage.setItem("dna-records-eq", JSON.stringify(preset));
   };
 
   const resetEQ = () => {
     audioEngine.resetEQ();
     setGains([0, 0, 0, 0, 0]);
     setActivePreset("Flat");
-    localStorage.setItem("echoforge-eq", JSON.stringify([0, 0, 0, 0, 0]));
+    localStorage.setItem("dna-records-eq", JSON.stringify([0, 0, 0, 0, 0]));
   };
 
   return (

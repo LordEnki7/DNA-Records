@@ -1,7 +1,7 @@
-# EchoForge Records - AI Record Label Platform
+# DNA Records - AI Record Label Platform
 
 ## Overview
-EchoForge Records is the world's first AI-powered record label platform, a division of Project DNA Music. It signs, promotes, and manages AI virtual artists using agentic technology with human oversight on all decisions.
+DNA Records is the world's first AI-powered record label platform, a division of Project DNA Music. It signs, promotes, and manages AI virtual artists using agentic technology with human oversight on all decisions.
 
 ## Recent Changes
 - **Feb 2026**: Enhanced platform with advanced features
@@ -12,7 +12,7 @@ EchoForge Records is the world's first AI-powered record label platform, a divis
   - Drag-and-drop playlist reordering using @dnd-kit in Library
   - Database schema: revenueDaily and contentCalendar tables with seed data (420 revenue records, 40 calendar items)
 - **Feb 2026**: Initial MVP built with full frontend/backend integration
-  - Futuristic dark theme with orange neon accents matching the EchoForge logo
+  - Futuristic dark theme with orange neon accents matching the DNA Records logo
   - Replit Auth for user authentication
   - PostgreSQL database with seeded AI artist roster
   - Music player with simulated playback

@@ -151,7 +151,7 @@ export default function AdminRevenue() {
           Revenue Dashboard
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Financial overview for EchoForge Records
+          Financial overview for DNA Records
         </p>
       </div>
 
