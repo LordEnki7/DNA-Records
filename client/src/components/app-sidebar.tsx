@@ -27,7 +27,7 @@ import {
   DollarSign,
   CalendarDays,
 } from "lucide-react";
-import logoUrl from "@assets/ChatGPT_Image_Feb_7,_2026,_11_31_15_PM_1770526963729.png";
+import logoUrl from "@assets/ChatGPT_Image_Feb_17,_2026,_07_03_47_PM_1771373053694.png";
 
 const mainNavItems = [
   { title: "Home", url: "/", icon: Home },
