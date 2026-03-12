@@ -26,6 +26,9 @@ import {
   TrendingUp,
   DollarSign,
   CalendarDays,
+  Cpu,
+  Bot,
+  ListChecks,
 } from "lucide-react";
 import logoUrl from "@assets/ChatGPT_Image_Feb_17,_2026,_07_03_47_PM_1771373053694.png";
 
@@ -38,6 +41,9 @@ const mainNavItems = [
 ];
 
 const adminNavItems = [
+  { title: "Command Center", url: "/admin/command", icon: Cpu },
+  { title: "Agent Registry", url: "/admin/agents", icon: Bot },
+  { title: "Task Queue", url: "/admin/tasks", icon: ListChecks },
   { title: "A&R Scout", url: "/admin/ar", icon: TrendingUp },
   { title: "Marketing", url: "/admin/marketing", icon: Megaphone },
   { title: "Revenue", url: "/admin/revenue", icon: DollarSign },

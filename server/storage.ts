@@ -11,6 +11,10 @@ import {
   promotions,
   revenueDaily,
   contentCalendar,
+  agents,
+  agentTasks,
+  executionRuns,
+  agentMemory,
   type Artist,
   type InsertArtist,
   type Track,
@@ -27,6 +31,14 @@ import {
   type RevenueDaily,
   type ContentCalendarItem,
   type InsertContentCalendarItem,
+  type Agent,
+  type InsertAgent,
+  type AgentTask,
+  type InsertAgentTask,
+  type ExecutionRun,
+  type InsertExecutionRun,
+  type AgentMemory,
+  type InsertAgentMemory,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and, or, ilike, asc } from "drizzle-orm";
@@ -78,6 +90,31 @@ export interface IStorage {
   updateCalendarItem(id: string, status: string, approvedBy?: string): Promise<ContentCalendarItem | undefined>;
 
   reorderPlaylist(id: string, trackIds: string[]): Promise<Playlist | undefined>;
+
+  getAgents(): Promise<Agent[]>;
+  getAgent(id: string): Promise<Agent | undefined>;
+  createAgent(data: InsertAgent): Promise<Agent>;
+  updateAgent(id: string, data: Partial<InsertAgent>): Promise<Agent | undefined>;
+
+  getAgentTasks(status?: string): Promise<AgentTask[]>;
+  getAgentTask(id: string): Promise<AgentTask | undefined>;
+  createAgentTask(data: InsertAgentTask): Promise<AgentTask>;
+  updateAgentTask(id: string, data: Partial<InsertAgentTask>): Promise<AgentTask | undefined>;
+
+  getExecutionRuns(taskId?: string): Promise<ExecutionRun[]>;
+  createExecutionRun(data: InsertExecutionRun): Promise<ExecutionRun>;
+
+  getAgentMemory(agentId?: string): Promise<AgentMemory[]>;
+  createAgentMemory(data: InsertAgentMemory): Promise<AgentMemory>;
+
+  getCommandCenterBrief(): Promise<{
+    totalAgents: number;
+    activeAgents: number;
+    pendingApprovals: number;
+    runningTasks: number;
+    completedToday: number;
+    avgQualityScore: number;
+  }>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -371,6 +408,99 @@ class DatabaseStorage implements IStorage {
       .where(eq(playlists.id, id))
       .returning();
     return playlist;
+  }
+
+  async getAgents(): Promise<Agent[]> {
+    return db.select().from(agents).orderBy(asc(agents.name));
+  }
+
+  async getAgent(id: string): Promise<Agent | undefined> {
+    const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+    return agent;
+  }
+
+  async createAgent(data: InsertAgent): Promise<Agent> {
+    const [agent] = await db.insert(agents).values(data).returning();
+    return agent;
+  }
+
+  async updateAgent(id: string, data: Partial<InsertAgent>): Promise<Agent | undefined> {
+    const [agent] = await db.update(agents).set(data).where(eq(agents.id, id)).returning();
+    return agent;
+  }
+
+  async getAgentTasks(status?: string): Promise<AgentTask[]> {
+    if (status) {
+      return db.select().from(agentTasks).where(eq(agentTasks.status, status)).orderBy(desc(agentTasks.priorityScore));
+    }
+    return db.select().from(agentTasks).orderBy(desc(agentTasks.priorityScore));
+  }
+
+  async getAgentTask(id: string): Promise<AgentTask | undefined> {
+    const [task] = await db.select().from(agentTasks).where(eq(agentTasks.id, id));
+    return task;
+  }
+
+  async createAgentTask(data: InsertAgentTask): Promise<AgentTask> {
+    const [task] = await db.insert(agentTasks).values(data).returning();
+    return task;
+  }
+
+  async updateAgentTask(id: string, data: Partial<InsertAgentTask>): Promise<AgentTask | undefined> {
+    const [task] = await db.update(agentTasks).set(data).where(eq(agentTasks.id, id)).returning();
+    return task;
+  }
+
+  async getExecutionRuns(taskId?: string): Promise<ExecutionRun[]> {
+    if (taskId) {
+      return db.select().from(executionRuns).where(eq(executionRuns.taskId, taskId)).orderBy(desc(executionRuns.createdAt));
+    }
+    return db.select().from(executionRuns).orderBy(desc(executionRuns.createdAt));
+  }
+
+  async createExecutionRun(data: InsertExecutionRun): Promise<ExecutionRun> {
+    const [run] = await db.insert(executionRuns).values(data).returning();
+    return run;
+  }
+
+  async getAgentMemory(agentId?: string): Promise<AgentMemory[]> {
+    if (agentId) {
+      return db.select().from(agentMemory).where(eq(agentMemory.agentId, agentId)).orderBy(desc(agentMemory.createdAt));
+    }
+    return db.select().from(agentMemory).orderBy(desc(agentMemory.createdAt));
+  }
+
+  async createAgentMemory(data: InsertAgentMemory): Promise<AgentMemory> {
+    const [mem] = await db.insert(agentMemory).values(data).returning();
+    return mem;
+  }
+
+  async getCommandCenterBrief(): Promise<{
+    totalAgents: number;
+    activeAgents: number;
+    pendingApprovals: number;
+    runningTasks: number;
+    completedToday: number;
+    avgQualityScore: number;
+  }> {
+    const allAgents = await db.select().from(agents);
+    const totalAgents = allAgents.length;
+    const activeAgents = allAgents.filter(a => a.status === "active").length;
+
+    const allTasks = await db.select().from(agentTasks);
+    const pendingApprovals = allTasks.filter(t => t.status === "pending" && t.requiresApproval).length;
+    const runningTasks = allTasks.filter(t => t.status === "running").length;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const allRuns = await db.select().from(executionRuns);
+    const completedToday = allRuns.filter(r => r.status === "completed" && r.createdAt && r.createdAt >= today).length;
+    const scoredRuns = allRuns.filter(r => r.qualityScore !== null && r.qualityScore !== undefined);
+    const avgQualityScore = scoredRuns.length > 0
+      ? Math.round(scoredRuns.reduce((acc, r) => acc + (r.qualityScore ?? 0), 0) / scoredRuns.length * 10) / 10
+      : 0;
+
+    return { totalAgents, activeAgents, pendingApprovals, runningTasks, completedToday, avgQualityScore };
   }
 }
 

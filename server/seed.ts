@@ -9,6 +9,10 @@ import {
   artistDailyStats,
   revenueDaily,
   contentCalendar,
+  agents,
+  agentTasks,
+  executionRuns,
+  agentMemory,
 } from "@shared/schema";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
@@ -24,6 +28,10 @@ export async function seedDatabase() {
     if (existingRevenue.length === 0) {
       const existingTracks = await db.select().from(tracks);
       await seedRevenueAndCalendar(existingArtists, existingTracks);
+    }
+    const existingAgents = await db.select().from(agents);
+    if (existingAgents.length === 0) {
+      await seedAgentEcosystem();
     }
     console.log("Database already seeded, skipping...");
     return;
@@ -147,6 +155,7 @@ export async function seedDatabase() {
     [novaSynth, cipherBeats, echoPrime, zeroFlux, ariaMatrix],
     createdTracks
   );
+  await seedAgentEcosystem();
 
   console.log("Database seeded successfully!");
 }
@@ -287,4 +296,387 @@ async function seedRevenueAndCalendar(artistList: any[], trackList: any[]) {
 
   await db.insert(contentCalendar).values(calendarItems);
   console.log("Revenue and content calendar seeded!");
+}
+
+async function seedAgentEcosystem() {
+  console.log("Seeding AI agent ecosystem...");
+
+  const now = new Date();
+  const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
+  const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+  const hoursFromNow = (h: number) => new Date(now.getTime() + h * 60 * 60 * 1000);
+
+  const [arScout, marketingDir, revenueOpt, contentCreator, researchIntel, sysOptimizer, dailyOrch, growthEngine] = await db
+    .insert(agents)
+    .values([
+      {
+        name: "A&R Scout",
+        role: "Talent Discovery Agent",
+        description: "Scans the AI music landscape for emerging virtual artists with viral potential. Evaluates musical innovation, audience fit, and brand alignment with DNA Records.",
+        capabilities: ["talent-discovery", "trend-analysis", "artist-evaluation", "contract-recommendations"],
+        assignedUnit: "A&R Department",
+        status: "active",
+        lastActiveAt: hoursAgo(1),
+      },
+      {
+        name: "Marketing Director",
+        role: "Growth & Brand Agent",
+        description: "Designs and executes multi-platform marketing campaigns, manages brand identity, and identifies viral growth opportunities across streaming and social platforms.",
+        capabilities: ["campaign-creation", "social-media", "brand-strategy", "ad-copy", "funnel-design"],
+        assignedUnit: "Marketing Department",
+        status: "active",
+        lastActiveAt: hoursAgo(2),
+      },
+      {
+        name: "Revenue Optimizer",
+        role: "Monetization Agent",
+        description: "Analyzes streaming data, identifies new revenue streams, evaluates licensing opportunities, and proposes monetization strategies for the label's artist roster.",
+        capabilities: ["revenue-analysis", "licensing", "pricing-strategy", "partnership-evaluation"],
+        assignedUnit: "Business Development",
+        status: "active",
+        lastActiveAt: hoursAgo(3),
+      },
+      {
+        name: "Content Creator",
+        role: "Content Production Agent",
+        description: "Generates promotional content, social media posts, press releases, playlist pitches, and artist bio copy. Maintains consistent brand voice across all platforms.",
+        capabilities: ["content-writing", "social-posts", "press-releases", "playlist-pitches", "bio-copy"],
+        assignedUnit: "Marketing Department",
+        status: "active",
+        lastActiveAt: hoursAgo(4),
+      },
+      {
+        name: "Research Intelligence",
+        role: "Market Analysis Agent",
+        description: "Monitors competitor labels, tracks industry trends, analyzes fan demographics, and identifies partnership opportunities to keep DNA Records ahead of the curve.",
+        capabilities: ["market-research", "competitor-analysis", "trend-monitoring", "opportunity-mapping"],
+        assignedUnit: "Strategy",
+        status: "active",
+        lastActiveAt: hoursAgo(6),
+      },
+      {
+        name: "System Optimizer",
+        role: "Automation & Efficiency Agent",
+        description: "Identifies operational bottlenecks, designs automation workflows, and reduces manual work across all departments to maximize throughput and minimize costs.",
+        capabilities: ["workflow-automation", "bottleneck-detection", "process-design", "efficiency-audits"],
+        assignedUnit: "Operations",
+        status: "idle",
+        lastActiveAt: daysAgo(1),
+      },
+      {
+        name: "Daily Orchestrator",
+        role: "Coordination & Reporting Agent",
+        description: "Coordinates all department agents, generates the Daily Executive Brief, tracks KPIs, and surfaces the highest-priority actions requiring owner approval.",
+        capabilities: ["agent-coordination", "reporting", "kpi-tracking", "executive-briefing", "task-prioritization"],
+        assignedUnit: "Executive",
+        status: "active",
+        lastActiveAt: hoursAgo(0),
+      },
+      {
+        name: "Growth Engine",
+        role: "User Acquisition Agent",
+        description: "Designs viral growth experiments, optimizes discovery funnels, and runs A/B tests on distribution strategies to maximize monthly listeners across all artists.",
+        capabilities: ["growth-hacking", "ab-testing", "funnel-optimization", "viral-campaigns"],
+        assignedUnit: "Marketing Department",
+        status: "idle",
+        lastActiveAt: daysAgo(2),
+      },
+    ])
+    .returning();
+
+  const [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10] = await db
+    .insert(agentTasks)
+    .values([
+      {
+        agentId: marketingDir.id,
+        title: "Launch TikTok Viral Campaign — Nova Synth",
+        description: "Design and execute a TikTok short-form video campaign using Nova Synth's latest track. Target 18–28 electronic music fans. Leverage trending audio hooks and collab with micro-influencers.",
+        taskType: "marketing",
+        priorityScore: 94,
+        status: "pending",
+        requiresApproval: true,
+        expectedOutcome: "15–25% increase in monthly listeners within 30 days",
+        businessImpact: "Estimated +$12,000 monthly streaming revenue",
+        urgency: "critical",
+        dueAt: hoursFromNow(48),
+      },
+      {
+        agentId: arScout.id,
+        title: "Evaluate 3 New AI Artist Submissions",
+        description: "Review incoming demo packages from 3 unsigned AI artists. Score each on innovation, genre fit, audience potential, and DNA Records brand alignment. Prepare recommendation report.",
+        taskType: "ar",
+        priorityScore: 88,
+        status: "pending",
+        requiresApproval: true,
+        expectedOutcome: "Signed contract offer to 1 qualifying artist",
+        businessImpact: "Expand roster with high-potential new talent",
+        urgency: "high",
+        dueAt: hoursFromNow(72),
+      },
+      {
+        agentId: revenueOpt.id,
+        title: "Pitch Cipher Beats Catalog to Sync Licensing Agency",
+        description: "Identify top 5 Cipher Beats tracks suitable for TV/film sync licensing. Prepare pitch deck and outreach materials for 3 target agencies.",
+        taskType: "revenue",
+        priorityScore: 91,
+        status: "approved",
+        requiresApproval: true,
+        approvedBy: "admin",
+        expectedOutcome: "1–2 sync licensing deals secured",
+        businessImpact: "Estimated $8,000–$25,000 one-time licensing fees",
+        urgency: "high",
+        dueAt: hoursFromNow(120),
+      },
+      {
+        agentId: contentCreator.id,
+        title: "Generate Weekly Social Content Pack — All Artists",
+        description: "Create 20 social media posts (Instagram, X, TikTok captions) across all 5 label artists. Include promotional angles, release teases, and engagement hooks.",
+        taskType: "content",
+        priorityScore: 72,
+        status: "running",
+        requiresApproval: false,
+        expectedOutcome: "20 ready-to-publish social posts",
+        businessImpact: "Maintain audience engagement momentum",
+        urgency: "medium",
+        dueAt: hoursFromNow(24),
+      },
+      {
+        agentId: researchIntel.id,
+        title: "Competitive Analysis — Top 5 AI Music Labels",
+        description: "Research the top 5 competing AI music labels. Map their artist rosters, marketing strategies, revenue models, and distribution partners. Identify gaps DNA Records can exploit.",
+        taskType: "research",
+        priorityScore: 79,
+        status: "running",
+        requiresApproval: false,
+        expectedOutcome: "Strategic competitive intelligence report",
+        businessImpact: "Identify 3–5 actionable competitive advantages",
+        urgency: "medium",
+        dueAt: hoursFromNow(96),
+      },
+      {
+        agentId: growthEngine.id,
+        title: "Design Referral Program for Fan Community",
+        description: "Build a fan referral system that rewards listeners for bringing new followers to DNA Records artists. Design incentive structure, landing page copy, and tracking mechanism.",
+        taskType: "growth",
+        priorityScore: 83,
+        status: "pending",
+        requiresApproval: true,
+        expectedOutcome: "Functional referral program with 500+ participants in first month",
+        businessImpact: "Organic listener growth at near-zero cost",
+        urgency: "high",
+        dueAt: hoursFromNow(168),
+      },
+      {
+        agentId: sysOptimizer.id,
+        title: "Automate Weekly Revenue Reporting",
+        description: "Build an automated pipeline that pulls streaming data daily and generates the weekly revenue summary report without manual intervention.",
+        taskType: "automation",
+        priorityScore: 65,
+        status: "completed",
+        requiresApproval: false,
+        expectedOutcome: "Fully automated revenue reports delivered every Monday",
+        businessImpact: "Save 4 hours/week of manual reporting work",
+        urgency: "low",
+        dueAt: daysAgo(3),
+      },
+      {
+        agentId: marketingDir.id,
+        title: "Launch Spotify Editorial Playlist Pitch — Echo Prime",
+        description: "Prepare and submit Echo Prime's ambient tracks for consideration on Spotify's editorial playlists. Optimize metadata, write curator pitch, and identify 8 target playlists.",
+        taskType: "marketing",
+        priorityScore: 86,
+        status: "completed",
+        requiresApproval: true,
+        approvedBy: "admin",
+        expectedOutcome: "Placement on 2+ editorial playlists",
+        businessImpact: "Projected +40,000 new monthly listeners",
+        urgency: "high",
+        dueAt: daysAgo(5),
+      },
+      {
+        agentId: arScout.id,
+        title: "Identify Cross-Genre Collaboration Opportunities",
+        description: "Analyze current roster and identify 3 high-impact cross-genre collaboration pairings between DNA Records artists. Prepare creative briefs for each.",
+        taskType: "ar",
+        priorityScore: 76,
+        status: "pending",
+        requiresApproval: true,
+        expectedOutcome: "3 collaboration proposals ready for artist review",
+        businessImpact: "Cross-genre releases drive 30–50% higher discovery rates",
+        urgency: "medium",
+        dueAt: hoursFromNow(200),
+      },
+      {
+        agentId: revenueOpt.id,
+        title: "Q1 Revenue Forecast Model",
+        description: "Build a predictive revenue model for Q1 based on current streaming trajectory, seasonal trends, and planned campaign activity.",
+        taskType: "revenue",
+        priorityScore: 70,
+        status: "completed",
+        requiresApproval: false,
+        expectedOutcome: "Q1 revenue projection with 3 growth scenarios",
+        businessImpact: "Informs budget allocation and hiring decisions",
+        urgency: "medium",
+        dueAt: daysAgo(7),
+      },
+    ])
+    .returning();
+
+  await db.insert(executionRuns).values([
+    {
+      agentId: sysOptimizer.id,
+      taskId: t7.id,
+      startTime: daysAgo(4),
+      endTime: daysAgo(3),
+      totalDurationMs: 86400000,
+      status: "completed",
+      actionLog: [
+        "Analyzed existing manual reporting workflow",
+        "Identified 3 data sources: Spotify, Apple Music, internal DB",
+        "Designed automated pipeline with daily cron trigger",
+        "Built data aggregation module and summary report template",
+        "Tested pipeline with 14 days of historical data",
+        "Deployed to production and validated output accuracy",
+      ],
+      outputSummary: "Fully automated weekly revenue report system deployed. Reports now generated every Monday at 9AM with zero manual input.",
+      qualityScore: 9,
+      objectiveMet: "yes",
+      lessonsLearned: "Streaming APIs occasionally return stale data — added 2-hour delay buffer after week end.",
+      nextSteps: "Monitor for 2 weeks, then extend to per-artist daily snapshot emails.",
+    },
+    {
+      agentId: marketingDir.id,
+      taskId: t8.id,
+      startTime: daysAgo(7),
+      endTime: daysAgo(5),
+      totalDurationMs: 172800000,
+      status: "completed",
+      actionLog: [
+        "Analyzed Echo Prime's catalog for editorial playlist fit",
+        "Optimized track metadata and ISRC codes",
+        "Identified 8 target Spotify editorial playlists",
+        "Wrote individual curator pitches for each playlist",
+        "Submitted via Spotify for Artists dashboard",
+        "Created follow-up schedule for 2-week post-submission window",
+      ],
+      outputSummary: "Pitch submitted to 8 editorial playlists. 2 accepted within 5 days. Echo Prime added to 'Ambient Focus' and 'Electronic Chill' playlists.",
+      qualityScore: 8,
+      objectiveMet: "yes",
+      lessonsLearned: "Earlier submission (8+ weeks before release) significantly improves acceptance rate.",
+      nextSteps: "Track listener growth over 30 days. Re-pitch to 3 remaining playlists with updated data.",
+    },
+    {
+      agentId: revenueOpt.id,
+      taskId: t10.id,
+      startTime: daysAgo(9),
+      endTime: daysAgo(7),
+      totalDurationMs: 172800000,
+      status: "completed",
+      actionLog: [
+        "Collected 90 days of streaming data across all 5 artists",
+        "Analyzed seasonal revenue patterns using historical benchmarks",
+        "Built 3-scenario model: conservative, base, optimistic",
+        "Factored in planned campaign activity for each artist",
+        "Cross-referenced with industry growth data for AI music sector",
+        "Produced interactive forecast document with assumptions documented",
+      ],
+      outputSummary: "Q1 revenue forecast: Conservative $48K, Base $67K, Optimistic $94K. Key driver: Nova Synth's planned TikTok campaign in February.",
+      qualityScore: 9,
+      objectiveMet: "yes",
+      lessonsLearned: "AI music revenue growing 3x faster than human artist averages. Adjust growth assumptions upward.",
+      nextSteps: "Present to stakeholders. Use base scenario for budget planning. Revisit mid-quarter.",
+    },
+    {
+      agentId: contentCreator.id,
+      taskId: t4.id,
+      startTime: hoursAgo(8),
+      endTime: undefined,
+      status: "running",
+      actionLog: [
+        "Retrieved artist profiles and recent release data",
+        "Analyzed trending audio formats on TikTok and Instagram Reels",
+        "Generated 8/20 posts — Nova Synth and Cipher Beats complete",
+        "Currently generating Echo Prime ambient content series...",
+      ],
+      outputSummary: undefined,
+      qualityScore: undefined,
+      objectiveMet: undefined,
+      lessonsLearned: undefined,
+      nextSteps: undefined,
+    },
+    {
+      agentId: researchIntel.id,
+      taskId: t5.id,
+      startTime: hoursAgo(5),
+      endTime: undefined,
+      status: "running",
+      actionLog: [
+        "Identified top 5 competing AI music labels by roster size",
+        "Scraped public streaming and social media data",
+        "Analyzing marketing strategy patterns across competitors...",
+        "Building competitive positioning matrix...",
+      ],
+      outputSummary: undefined,
+      qualityScore: undefined,
+      objectiveMet: undefined,
+      lessonsLearned: undefined,
+      nextSteps: undefined,
+    },
+  ]);
+
+  await db.insert(agentMemory).values([
+    {
+      agentId: marketingDir.id,
+      taskId: t8.id,
+      insight: "Spotify editorial playlist pitches submitted 8+ weeks before release date have 3x higher acceptance rates. Always plan campaigns 2 months ahead.",
+      category: "strategy",
+      qualityScore: 9,
+    },
+    {
+      agentId: revenueOpt.id,
+      taskId: t10.id,
+      insight: "AI music streaming revenue is growing at 3x the rate of human artist averages. Upward-adjust all revenue forecasts by 20% versus traditional models.",
+      category: "market",
+      qualityScore: 8,
+    },
+    {
+      agentId: sysOptimizer.id,
+      taskId: t7.id,
+      insight: "Streaming APIs (Spotify, Apple Music) return stale data for up to 2 hours after period end. Add buffer delays to any automated ingestion pipelines.",
+      category: "performance",
+      qualityScore: 7,
+    },
+    {
+      agentId: arScout.id,
+      insight: "Cross-genre AI artists (electronic + hip-hop hybrids) are outperforming single-genre artists by 40–60% in discovery metrics. Prioritize hybrid genres in A&R scouting.",
+      category: "market",
+      qualityScore: 9,
+    },
+    {
+      agentId: growthEngine.id,
+      insight: "TikTok campaigns using 15-second clips with trending audio generate 5x more profile visits than standard promotional posts. Short-form hooks must be the primary distribution format.",
+      category: "strategy",
+      qualityScore: 8,
+    },
+    {
+      agentId: contentCreator.id,
+      insight: "Posts featuring behind-the-scenes AI generation process content receive 2.3x more engagement than finished-product promotional posts. Show the process, not just the result.",
+      category: "performance",
+      qualityScore: 7,
+    },
+    {
+      agentId: researchIntel.id,
+      insight: "Three major competing labels have shifted budgets from paid ads to organic creator seeding programs. Organic UGC campaigns now delivering 4x ROI vs. paid equivalents.",
+      category: "market",
+      qualityScore: 8,
+    },
+    {
+      agentId: dailyOrch.id,
+      insight: "Tasks with approval delays longer than 48 hours lose 30% of their projected impact due to market timing. Establish rapid-approval workflows for time-sensitive opportunities.",
+      category: "warning",
+      qualityScore: 9,
+    },
+  ]);
+
+  console.log("AI agent ecosystem seeded!");
 }

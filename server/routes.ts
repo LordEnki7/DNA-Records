@@ -338,6 +338,83 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/admin/agents", async (_req, res) => {
+    try {
+      const agentList = await storage.getAgents();
+      res.json(agentList);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch agents" });
+    }
+  });
+
+  app.patch("/api/admin/agents/:id", async (req, res) => {
+    try {
+      const agent = await storage.updateAgent(req.params.id, req.body);
+      if (!agent) return res.status(404).json({ message: "Agent not found" });
+      res.json(agent);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update agent" });
+    }
+  });
+
+  app.get("/api/admin/tasks", async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const tasks = await storage.getAgentTasks(status);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post("/api/admin/tasks", async (req, res) => {
+    try {
+      const task = await storage.createAgentTask(req.body);
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.patch("/api/admin/tasks/:id", async (req, res) => {
+    try {
+      const task = await storage.updateAgentTask(req.params.id, req.body);
+      if (!task) return res.status(404).json({ message: "Task not found" });
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.get("/api/admin/executions", async (req, res) => {
+    try {
+      const taskId = req.query.taskId as string | undefined;
+      const runs = await storage.getExecutionRuns(taskId);
+      res.json(runs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch execution runs" });
+    }
+  });
+
+  app.get("/api/admin/memory", async (req, res) => {
+    try {
+      const agentId = req.query.agentId as string | undefined;
+      const memories = await storage.getAgentMemory(agentId);
+      res.json(memories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch agent memory" });
+    }
+  });
+
+  app.get("/api/admin/command-center", async (_req, res) => {
+    try {
+      const brief = await storage.getCommandCenterBrief();
+      res.json(brief);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch command center data" });
+    }
+  });
+
   app.patch("/api/playlists/:id/reorder", async (req, res) => {
     try {
       const user = getUser(req);

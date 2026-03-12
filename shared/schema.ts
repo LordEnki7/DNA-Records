@@ -199,3 +199,73 @@ export type RevenueDaily = typeof revenueDaily.$inferSelect;
 export type InsertRevenueDaily = z.infer<typeof insertRevenueDailySchema>;
 export type ContentCalendarItem = typeof contentCalendar.$inferSelect;
 export type InsertContentCalendarItem = z.infer<typeof insertContentCalendarSchema>;
+
+export const agents = pgTable("agents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  description: text("description"),
+  capabilities: text("capabilities").array().default(sql`'{}'::text[]`),
+  assignedUnit: text("assigned_unit"),
+  status: text("status").default("active"),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const agentTasks = pgTable("agent_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  agentId: varchar("agent_id").references(() => agents.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  taskType: text("task_type").notNull(),
+  priorityScore: integer("priority_score").default(50),
+  status: text("status").default("pending"),
+  requiresApproval: boolean("requires_approval").default(true),
+  approvedBy: varchar("approved_by"),
+  dueAt: timestamp("due_at"),
+  expectedOutcome: text("expected_outcome"),
+  businessImpact: text("business_impact"),
+  urgency: text("urgency").default("medium"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const executionRuns = pgTable("execution_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  agentId: varchar("agent_id").references(() => agents.id),
+  taskId: varchar("task_id").references(() => agentTasks.id),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  totalDurationMs: integer("total_duration_ms"),
+  status: text("status").default("running"),
+  actionLog: text("action_log").array().default(sql`'{}'::text[]`),
+  outputSummary: text("output_summary"),
+  qualityScore: integer("quality_score"),
+  objectiveMet: text("objective_met"),
+  lessonsLearned: text("lessons_learned"),
+  nextSteps: text("next_steps"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const agentMemory = pgTable("agent_memory", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  agentId: varchar("agent_id").references(() => agents.id),
+  taskId: varchar("task_id").references(() => agentTasks.id),
+  insight: text("insight").notNull(),
+  category: text("category").notNull(),
+  qualityScore: integer("quality_score"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAgentSchema = createInsertSchema(agents).omit({ id: true, createdAt: true });
+export const insertAgentTaskSchema = createInsertSchema(agentTasks).omit({ id: true, createdAt: true });
+export const insertExecutionRunSchema = createInsertSchema(executionRuns).omit({ id: true, createdAt: true });
+export const insertAgentMemorySchema = createInsertSchema(agentMemory).omit({ id: true, createdAt: true });
+
+export type Agent = typeof agents.$inferSelect;
+export type InsertAgent = z.infer<typeof insertAgentSchema>;
+export type AgentTask = typeof agentTasks.$inferSelect;
+export type InsertAgentTask = z.infer<typeof insertAgentTaskSchema>;
+export type ExecutionRun = typeof executionRuns.$inferSelect;
+export type InsertExecutionRun = z.infer<typeof insertExecutionRunSchema>;
+export type AgentMemory = typeof agentMemory.$inferSelect;
+export type InsertAgentMemory = z.infer<typeof insertAgentMemorySchema>;

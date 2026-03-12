@@ -22,6 +22,9 @@ import AdminAR from "@/pages/admin-ar";
 import AdminMarketing from "@/pages/admin-marketing";
 import AdminRevenue from "@/pages/admin-revenue";
 import AdminCalendar from "@/pages/admin-calendar";
+import AdminCommand from "@/pages/admin-command";
+import AdminAgents from "@/pages/admin-agents";
+import AdminTasks from "@/pages/admin-tasks";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRouter() {
@@ -34,6 +37,9 @@ function AuthenticatedRouter() {
       <Route path="/live" component={Live} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/admin" component={Admin} />
+      <Route path="/admin/command" component={AdminCommand} />
+      <Route path="/admin/agents" component={AdminAgents} />
+      <Route path="/admin/tasks" component={AdminTasks} />
       <Route path="/admin/ar" component={AdminAR} />
       <Route path="/admin/marketing" component={AdminMarketing} />
       <Route path="/admin/revenue" component={AdminRevenue} />

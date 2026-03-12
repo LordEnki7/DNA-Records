@@ -4,6 +4,12 @@
 DNA Records is the world's first AI-powered record label platform, a division of Project DNA Music. It signs, promotes, and manages AI virtual artists using agentic technology with human oversight on all decisions.
 
 ## Recent Changes
+- **Mar 2026**: AI Agent Command Center built from agent infrastructure docs
+  - Agent Registry page: view/manage 8 AI agents (A&R Scout, Marketing Director, Revenue Optimizer, Content Creator, Research Intelligence, System Optimizer, Daily Orchestrator, Growth Engine) with status toggle (active/idle/disabled)
+  - Task Queue page: full task assignment system with approval/reject workflow, priority scores (1-100), urgency levels, execution log viewer with action logs, quality scores, lessons learned
+  - Command Center page: Daily Executive Brief with live metrics, top priority actions, approval queue, quick wins, shared agent memory/insights, end-of-day targets
+  - 4 new DB tables: agents, agent_tasks, execution_runs, agent_memory with full CRUD API
+  - New admin sidebar nav: Command Center, Agent Registry, Task Queue
 - **Feb 2026**: Enhanced platform with advanced features
   - Music player: queue management (add/play next/remove/clear), shuffle/repeat modes, keyboard shortcuts (Space, arrows), expandable mini-player with album art
   - 5-band equalizer with presets (Flat, Bass Boost, V-Shape, etc.), localStorage persistence, accessible from player bar
