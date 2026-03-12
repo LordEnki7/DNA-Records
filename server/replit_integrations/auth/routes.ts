@@ -4,6 +4,38 @@ import { isAuthenticated } from "./replitAuth";
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
+  app.post("/api/auth/admin-login", async (req: any, res) => {
+    try {
+      const { username, password } = req.body;
+      const adminUsername = process.env.ADMIN_USERNAME || "dnaadmin";
+      const adminPassword = process.env.ADMIN_PASSWORD;
+
+      if (!adminPassword) {
+        return res.status(503).json({ message: "Admin credentials not configured" });
+      }
+      if (username !== adminUsername || password !== adminPassword) {
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
+
+      (req.session as any).adminLoggedIn = true;
+      req.session.save((err: any) => {
+        if (err) return res.status(500).json({ message: "Session error" });
+        res.json({ success: true });
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/admin-logout", (req: any, res) => {
+    (req.session as any).adminLoggedIn = false;
+    req.session.save(() => res.json({ success: true }));
+  });
+
+  app.get("/api/auth/admin-status", (req: any, res) => {
+    res.json({ isAdmin: !!(req.session as any).adminLoggedIn });
+  });
+
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

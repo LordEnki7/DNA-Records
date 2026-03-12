@@ -9,21 +9,11 @@ function getUser(req: any): { id: string } | null {
   return null;
 }
 
-const isAdminMiddleware: RequestHandler = async (req: any, res, next) => {
-  if (!req.isAuthenticated || !req.isAuthenticated()) {
-    return res.status(401).json({ message: "Unauthorized" });
+const isAdminMiddleware: RequestHandler = (req: any, res, next) => {
+  if ((req.session as any)?.adminLoggedIn === true) {
+    return next();
   }
-  try {
-    const userId = req.user?.claims?.sub;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    const user = await authStorage.getUser(userId);
-    if (!user?.isAdmin) {
-      return res.status(403).json({ message: "Admin access required" });
-    }
-    next();
-  } catch {
-    return res.status(500).json({ message: "Auth check failed" });
-  }
+  return res.status(403).json({ message: "Admin login required" });
 };
 
 export async function registerRoutes(
