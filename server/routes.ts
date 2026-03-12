@@ -1,18 +1,37 @@
-import type { Express } from "express";
+import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { authStorage } from "./replit_integrations/auth/storage";
 
 function getUser(req: any): { id: string } | null {
   if (req.user && req.user.id) return req.user;
   return null;
 }
 
+const isAdminMiddleware: RequestHandler = async (req: any, res, next) => {
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  try {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const user = await authStorage.getUser(userId);
+    if (!user?.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    next();
+  } catch {
+    return res.status(500).json({ message: "Auth check failed" });
+  }
+};
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   await setupAuth(app);
+  app.use("/api/admin", isAdminMiddleware);
   registerAuthRoutes(app);
 
   app.get("/api/artists", async (_req, res) => {

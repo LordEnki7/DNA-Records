@@ -25,6 +25,7 @@ import AdminCalendar from "@/pages/admin-calendar";
 import AdminCommand from "@/pages/admin-command";
 import AdminAgents from "@/pages/admin-agents";
 import AdminTasks from "@/pages/admin-tasks";
+import { AdminGuard } from "@/components/admin-guard";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRouter() {
@@ -36,14 +37,14 @@ function AuthenticatedRouter() {
       <Route path="/library" component={Library} />
       <Route path="/live" component={Live} />
       <Route path="/notifications" component={Notifications} />
-      <Route path="/admin" component={Admin} />
-      <Route path="/admin/command" component={AdminCommand} />
-      <Route path="/admin/agents" component={AdminAgents} />
-      <Route path="/admin/tasks" component={AdminTasks} />
-      <Route path="/admin/ar" component={AdminAR} />
-      <Route path="/admin/marketing" component={AdminMarketing} />
-      <Route path="/admin/revenue" component={AdminRevenue} />
-      <Route path="/admin/calendar" component={AdminCalendar} />
+      <Route path="/admin" component={() => <AdminGuard><Admin /></AdminGuard>} />
+      <Route path="/admin/command" component={() => <AdminGuard><AdminCommand /></AdminGuard>} />
+      <Route path="/admin/agents" component={() => <AdminGuard><AdminAgents /></AdminGuard>} />
+      <Route path="/admin/tasks" component={() => <AdminGuard><AdminTasks /></AdminGuard>} />
+      <Route path="/admin/ar" component={() => <AdminGuard><AdminAR /></AdminGuard>} />
+      <Route path="/admin/marketing" component={() => <AdminGuard><AdminMarketing /></AdminGuard>} />
+      <Route path="/admin/revenue" component={() => <AdminGuard><AdminRevenue /></AdminGuard>} />
+      <Route path="/admin/calendar" component={() => <AdminGuard><AdminCalendar /></AdminGuard>} />
       <Route component={NotFound} />
     </Switch>
   );
