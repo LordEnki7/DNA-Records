@@ -26,6 +26,7 @@ import AdminCommand from "@/pages/admin-command";
 import AdminAgents from "@/pages/admin-agents";
 import AdminTasks from "@/pages/admin-tasks";
 import { AdminGuard } from "@/components/admin-guard";
+import AdminLogin from "@/pages/admin-login";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRouter() {
@@ -37,6 +38,7 @@ function AuthenticatedRouter() {
       <Route path="/library" component={Library} />
       <Route path="/live" component={Live} />
       <Route path="/notifications" component={Notifications} />
+      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={() => <AdminGuard><Admin /></AdminGuard>} />
       <Route path="/admin/command" component={() => <AdminGuard><AdminCommand /></AdminGuard>} />
       <Route path="/admin/agents" component={() => <AdminGuard><AdminAgents /></AdminGuard>} />
