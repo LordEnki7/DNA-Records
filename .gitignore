@@ -4,3 +4,19 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Self-hosted deployment — exclude large/generated directories
+attached_assets/
+uploads/
+
+# Large binary files in the PROJECT ROOT only (leading / = root-relative)
+# Assets served by the app live in client/public/ and ARE committed.
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.mp4
+/*.mp3
+/*.wav
+/*.zip
+/*.pdf

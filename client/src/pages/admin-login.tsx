@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
-import logoUrl from "@assets/ChatGPT_Image_Feb_17,_2026,_07_03_47_PM_1771373053694.png";
+const logoUrl = "/media/dna-logo.png";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();

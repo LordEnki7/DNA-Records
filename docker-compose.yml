@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - uploads_data:/app/uploads
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      # ── Required ──────────────────────────────────────────────────────────
+      DATABASE_URL: ${DATABASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # ── Optional ──────────────────────────────────────────────────────────
+      APP_URL: ${APP_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+
+  # ── Optional self-hosted PostgreSQL ──────────────────────────────────────────
+  # Uncomment if you want to run the database in Docker instead of an external service.
+  #
+  # db:
+  #   image: postgres:16-alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: dna_records
+  #     POSTGRES_USER: dna_records
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+volumes:
+  uploads_data:
+  # postgres_data:  # Uncomment if using the self-hosted DB block above

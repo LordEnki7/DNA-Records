@@ -1,0 +1,19 @@
+node_modules
+dist
+.git
+.local
+attached_assets
+uploads
+
+# Large binary files in root
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.mp3
+*.wav
+*.zip
+*.tar
+*.tar.gz
+*.pdf
