@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
+import { nigStatusHandler } from "./nig-status";
 
 function getUser(req: any): { id: string } | null {
   if (req.user && req.user.id) return req.user;
@@ -23,6 +24,9 @@ export async function registerRoutes(
   await setupAuth(app);
   app.use("/api/admin", isAdminMiddleware);
   registerAuthRoutes(app);
+
+  // NIG Command Center — division health/metrics endpoint
+  app.get("/api/nig-status", nigStatusHandler);
 
   app.get("/api/artists", async (_req, res) => {
     try {
