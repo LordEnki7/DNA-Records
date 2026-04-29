@@ -95,3 +95,53 @@ shared/
 - Project DNA Music branding (parent company)
 - Human verification on all AI decisions
 - Futuristic sci-fi aesthetic
+
+## Agent Safety Rules — Read Before Touching the Database or Files
+
+These rules exist to prevent catastrophic, unrecoverable mistakes.
+An AI agent deleted an entire production database in 9 seconds once.
+Don't be that agent.
+
+### Database Rules
+
+1. NEVER drop a table, truncate a table, or delete all rows from a table.
+   If you think you need to, stop and ask the user first.
+
+2. NEVER delete a user row directly. Use a soft delete:
+   set account_status = 'deleted' and deleted_at = now(). Keep the row.
+
+3. NEVER run seeders against a production database.
+   Check NODE_ENV and DATABASE_URL before running any seed script.
+   If either points to production, throw an error and stop.
+
+4. NEVER change the type of a primary key column (e.g. serial ↔ varchar).
+   This generates destructive ALTER TABLE statements that break everything.
+   Check the existing schema first and match it exactly.
+
+5. Before ANY bulk delete operation in production, require explicit
+   human confirmation — not just a flag, an actual user approval step.
+
+6. Log every destructive operation before it runs:
+   who, what table, what record, why, timestamp.
+
+### File and Secrets Rules
+
+7. NEVER print, log, or write a secret/API key/token to a file or console.
+
+8. NEVER modify package.json scripts without asking the user first.
+
+9. NEVER modify the Vite config (vite.config.ts, server/vite.ts).
+
+10. NEVER create documentation files (README, markdown) unless explicitly asked.
+
+### General Rules
+
+11. Do exactly what was asked. No additions, no subtractions.
+
+12. Don't use placeholder or mock data unless the user specifically requests it.
+
+13. If something feels risky or irreversible — stop and ask.
+    It costs 30 seconds. Recovery costs hours or days.
+
+14. Clean up all debug code, test files, and console.log statements
+    before marking a task complete.
