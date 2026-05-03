@@ -15,6 +15,9 @@ RUN npm run build
 FROM node:20-alpine AS production
 WORKDIR /app
 
+# bash is not included in alpine by default — install it so Dokploy's terminal works
+RUN apk add --no-cache bash
+
 # Copy full node_modules from deps stage so drizzle-kit and all tools are available
 COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
