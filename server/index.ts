@@ -1,6 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -15,6 +18,42 @@ declare module "http" {
   }
 }
 
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(
+  helmet({
+    // Allow inline scripts/styles for the React app
+    contentSecurityPolicy: false,
+  })
+);
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const allowedOrigins = process.env.APP_URL
+  ? [process.env.APP_URL]
+  : true; // allow all in dev
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,                  // 300 requests per window per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests, please try again later." },
+});
+
+// Stricter limiter for admin login — prevent brute force
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many login attempts, please try again in 15 minutes." },
+});
+
+app.use("/api", apiLimiter);
+app.use("/api/auth/admin-login", adminLoginLimiter);
+
+// ── Body parsing ──────────────────────────────────────────────────────────────
 app.use(
   express.json({
     verify: (req, _res, buf) => {
@@ -22,15 +61,19 @@ app.use(
     },
   }),
 );
-
 app.use(express.urlencoded({ extended: false }));
 
-// Serve uploaded files — falls back to local filesystem when Replit Object Storage is absent.
-// Mount BEFORE routes so /uploads/* is served as static files.
+// ── Uploads static directory ──────────────────────────────────────────────────
 const uploadsDir = path.resolve(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 app.use("/uploads", express.static(uploadsDir));
 
+// ── Health check (for Dokploy / Docker) ──────────────────────────────────────
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// ── Request logger ────────────────────────────────────────────────────────────
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -38,7 +81,6 @@ export function log(message: string, source = "express") {
     second: "2-digit",
     hour12: true,
   });
-
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
@@ -60,7 +102,6 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       log(logLine);
     }
   });
@@ -68,6 +109,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── Routes & startup ──────────────────────────────────────────────────────────
 (async () => {
   await registerRoutes(httpServer, app);
 
@@ -78,19 +120,11 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     console.error("Internal Server Error:", err);
-
-    if (res.headersSent) {
-      return next(err);
-    }
-
+    if (res.headersSent) return next(err);
     return res.status(status).json({ message });
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
@@ -98,19 +132,25 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+  httpServer.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
+    log(`serving on port ${port}`);
+  });
+
+  // ── Graceful shutdown ───────────────────────────────────────────────────────
+  const shutdown = (signal: string) => {
+    log(`${signal} received — shutting down gracefully`);
+    httpServer.close(() => {
+      log("Server closed. Exiting.");
+      process.exit(0);
+    });
+    // Force exit after 10s if connections don't close
+    setTimeout(() => {
+      log("Forcing exit after timeout.");
+      process.exit(1);
+    }, 10_000);
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 })();

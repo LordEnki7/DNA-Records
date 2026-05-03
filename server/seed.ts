@@ -18,6 +18,17 @@ import { db } from "./db";
 import { sql } from "drizzle-orm";
 
 export async function seedDatabase() {
+  // Safety rule #3: never seed a production database
+  if (process.env.NODE_ENV === "production") {
+    const url = process.env.DATABASE_URL ?? "";
+    // Allow seeding if this is clearly a dev/local DB
+    const isSafeToSeed = url.includes("localhost") || url.includes("127.0.0.1") || url.includes("helium");
+    if (!isSafeToSeed) {
+      console.log("[Seed] NODE_ENV=production with external DB — skipping seed for safety.");
+      return;
+    }
+  }
+
   const existingArtists = await db.select().from(artists);
   if (existingArtists.length > 0) {
     const existingSessions = await db.select().from(liveSessions);
