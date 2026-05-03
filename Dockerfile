@@ -31,4 +31,8 @@ RUN mkdir -p /app/uploads
 
 EXPOSE 5000
 
+# Dokploy / Docker health check — marks container unhealthy if /health stops responding
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:5000/health || exit 1
+
 CMD ["node", "dist/index.cjs"]

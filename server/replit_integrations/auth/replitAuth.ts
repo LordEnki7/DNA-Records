@@ -34,8 +34,9 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // Secure cookies in production (behind reverse proxy); plain HTTP allowed in local dev
+      // Secure + sameSite in production (behind reverse proxy); relaxed in local dev
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
       maxAge: sessionTtl,
     },
   });
